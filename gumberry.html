@@ -1,0 +1,1676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gumberry.ai — Smith Family Dental</title>
+<style>
+  :root{
+    --bg:#F7F4EF; --surface:#FFFFFF; --ink:#23201D; --ink-soft:#6B655D; --ink-faint:#9C948A;
+    --line:#E4DED4;
+    --berry:#7A3B54; --berry-light:#F1E3EA; --berry-dark:#4F2537;
+    --sage:#4C6B57; --sage-light:#E7EEE7;
+    --amber:#96691F; --amber-light:#F7EBD7;
+    --coral:#A83B33; --coral-light:#F6E1DE;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:15px; line-height:1.5;}
+  h1,h2,h3,.serif{font-family:Georgia,"Iowan Old Style","Palatino Linotype",serif;}
+  a{color:inherit;}
+  button{font-family:inherit; font-size:14px; cursor:pointer;}
+  ::-webkit-scrollbar{width:8px;} ::-webkit-scrollbar-thumb{background:var(--line); border-radius:4px;}
+
+  .app{display:flex; min-height:100vh;}
+
+  /* Sidebar */
+  .sidebar{width:250px; flex:none; background:var(--surface); border-right:1px solid var(--line);
+    padding:24px 16px; display:flex; flex-direction:column; gap:22px; position:sticky; top:0; height:100vh;}
+  .brand{display:flex; align-items:center; gap:10px; padding:0 8px;}
+  .brand-mark{width:30px; height:30px; border-radius:8px; background:var(--berry); flex:none;
+    display:flex; align-items:center; justify-content:center; color:#fff; font-family:Georgia,serif; font-size:16px;}
+  .brand-name{font-family:Georgia,serif; font-size:19px; color:var(--berry-dark); letter-spacing:0.2px;}
+  .greeting{padding:0 8px;}
+  .greeting .label{font-size:12px; color:var(--ink-faint);}
+  .greeting .name{font-size:15px; font-weight:600;}
+
+  nav{display:flex; flex-direction:column; gap:2px;}
+  .nav-item{display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:8px;
+    color:var(--ink-soft); text-decoration:none; border:none; background:transparent; width:100%;
+    text-align:left; font-size:14px;}
+  .nav-item:hover{background:var(--bg);}
+  .nav-item.active{background:var(--berry-light); color:var(--berry-dark); font-weight:600;}
+  .nav-item .ic{width:18px; height:18px; flex:none; opacity:0.85;}
+  .nav-item .lbl{flex:1;}
+  .count{font-size:12px; padding:1px 7px; border-radius:20px; background:var(--line); color:var(--ink-soft);}
+  .count.danger{background:var(--coral-light); color:var(--coral);}
+
+  .sidebar-foot{margin-top:auto; padding:10px 8px; font-size:12px; color:var(--ink-faint); border-top:1px solid var(--line); padding-top:14px;}
+
+  /* Main */
+  main{flex:1; padding:32px 40px; max-width:1080px;}
+  .view{display:none;}
+  .view.active{display:block;}
+  .view-header{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:22px;}
+  .view-header h1{font-size:25px; margin:0 0 4px;}
+  .view-header .sub{color:var(--ink-soft); font-size:14px;}
+  .today{font-size:13px; color:var(--ink-faint);}
+
+  .card{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:18px 20px;}
+  .grid{display:grid; gap:14px;}
+  .grid-3{grid-template-columns:repeat(3,1fr);}
+  .grid-2{grid-template-columns:repeat(2,1fr);}
+
+  /* Overview summary cards */
+  .summary-card{cursor:pointer; transition:border-color .12s;}
+  .summary-card:hover{border-color:var(--ink-faint);}
+  .summary-card .top{display:flex; justify-content:space-between; align-items:flex-start;}
+  .summary-card .ic-wrap{width:34px; height:34px; border-radius:8px; display:flex; align-items:center; justify-content:center;}
+  .summary-card h3{font-size:15px; margin:12px 0 2px; font-family:inherit; font-weight:600;}
+  .summary-card .stat{font-size:22px; font-weight:600; margin-top:2px;}
+  .summary-card .desc{font-size:13px; color:var(--ink-soft); margin-top:2px;}
+
+  .molar-mark{font-size:17px;}
+  .molar-avatar{width:44px; height:44px; border-radius:12px; background:var(--sage-light); flex:none;
+    display:flex; align-items:center; justify-content:center; font-size:22px;}
+  .rec-card .molar-avatar{width:32px; height:32px; border-radius:8px; font-size:16px;}
+
+  .tint-coral{background:var(--coral-light); color:var(--coral);}
+  .tint-berry{background:var(--berry-light); color:var(--berry);}
+  .tint-sage{background:var(--sage-light); color:var(--sage);}
+  .tint-amber{background:var(--amber-light); color:var(--amber);}
+
+  section.block{margin-top:30px;}
+  section.block h2{font-size:16px; margin-bottom:12px;}
+
+  /* Problem list */
+  .problem-row{display:flex; gap:14px; padding:14px 0; border-bottom:1px solid var(--line);}
+  .problem-row:last-child{border-bottom:none;}
+  .sev-dot{width:9px; height:9px; border-radius:50%; margin-top:6px; flex:none;}
+  .sev-high{background:var(--coral);}
+  .sev-med{background:var(--amber);}
+  .problem-row .body{flex:1;}
+  .problem-row .title{font-weight:600; font-size:14.5px;}
+  .problem-row .meta{font-size:13px; color:var(--ink-soft); margin-top:3px;}
+  .tag{display:inline-block; font-size:11.5px; padding:2px 8px; border-radius:20px; margin-right:6px;}
+
+  .btn{border:1px solid var(--line); background:var(--surface); border-radius:8px; padding:7px 13px; font-size:13.5px;}
+  .btn:hover{border-color:var(--ink-faint);}
+  .btn-quiet{border:none; background:none; color:var(--ink-soft); padding:7px 8px;}
+  .btn-quiet:hover{color:var(--ink);}
+
+  /* SOP list */
+  .sop-search{width:100%; padding:9px 12px; border:1px solid var(--line); border-radius:8px; font-size:14px; margin-bottom:16px; background:var(--surface);}
+  .sop-cat{margin-bottom:22px;}
+  .sop-cat h3{font-size:13px; text-transform:none; color:var(--ink-soft); font-weight:600; margin:0 0 8px; font-family:inherit;}
+  .sop-item{display:flex; justify-content:space-between; align-items:center; padding:10px 12px; border-radius:8px; border:1px solid var(--line); margin-bottom:6px; background:var(--surface);}
+  .sop-item .n{color:var(--ink-faint); font-size:13px; width:24px; flex:none;}
+  .sop-item .t{flex:1; font-size:14px;}
+  .sop-item .updated{font-size:12.5px; color:var(--ink-faint);}
+
+  /* Training */
+  .staff-card{margin-bottom:14px;}
+  .staff-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;}
+  .staff-head .who{display:flex; gap:10px; align-items:center;}
+  .avatar{width:36px; height:36px; border-radius:50%; background:var(--berry-light); color:var(--berry-dark);
+    display:flex; align-items:center; justify-content:center; font-weight:600; font-size:13px;}
+  .staff-head .name{font-weight:600; font-size:14.5px;}
+  .staff-head .role{font-size:12.5px; color:var(--ink-soft);}
+  .module-row{display:flex; align-items:center; gap:10px; padding:6px 0; font-size:13.5px;}
+  .module-row .m-name{flex:1; color:var(--ink-soft);}
+  .bar{width:120px; height:6px; background:var(--line); border-radius:4px; overflow:hidden;}
+  .bar > div{height:100%; background:var(--sage);}
+  .bar.expired > div{background:var(--coral);}
+  .pct{width:36px; text-align:right; font-size:12.5px; color:var(--ink-faint);}
+
+  /* Certifications */
+  table.certs{width:100%; border-collapse:collapse; font-size:14px;}
+  table.certs th{text-align:left; font-size:12px; color:var(--ink-faint); font-weight:600; padding:0 10px 8px; border-bottom:1px solid var(--line);}
+  table.certs td{padding:11px 10px; border-bottom:1px solid var(--line);}
+  .status-pill{font-size:12px; padding:3px 9px; border-radius:20px; font-weight:600; white-space:nowrap;}
+
+  /* Performance */
+  .metric{padding:16px 0; border-bottom:1px solid var(--line);}
+  .metric:last-child{border-bottom:none;}
+  .metric-top{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;}
+  .metric-label{font-size:14px; color:var(--ink-soft);}
+  .metric-value{font-size:15px; font-weight:600;}
+  .metric-goal{font-size:12.5px; color:var(--ink-faint);}
+  .metric-bar{height:8px; background:var(--line); border-radius:4px; overflow:hidden;}
+  .metric-bar > div{height:100%; background:var(--berry);}
+
+  /* AI recs */
+  .rec-card{display:flex; gap:14px; padding:16px; border:1px solid var(--line); border-radius:10px; margin-bottom:10px; background:var(--surface);}
+  .rec-icon{width:32px; height:32px; border-radius:8px; background:var(--berry-light); color:var(--berry-dark); flex:none;
+    display:flex; align-items:center; justify-content:center;}
+  .rec-body{flex:1;}
+  .rec-title{font-weight:600; font-size:14.5px; margin-bottom:3px;}
+  .rec-desc{font-size:13.5px; color:var(--ink-soft); margin-bottom:10px;}
+  .rec-actions{display:flex; gap:8px;}
+  .rec-actions .btn{padding:6px 12px; font-size:13px;}
+  .dismissed{opacity:0.4;}
+
+  .empty-note{font-size:13.5px; color:var(--ink-faint); font-style:italic; padding:8px 0;}
+
+  /* Password gate */
+  body.locked .app{display:none;}
+  #gate-overlay{display:none;}
+  body.locked #gate-overlay{display:flex; position:fixed; inset:0; background:var(--bg); z-index:9999; align-items:center; justify-content:center; padding:20px;}
+  .gate-card{max-width:320px; width:100%; text-align:center;}
+  .gate-brand{font-family:Georgia,serif; font-size:22px; color:var(--berry-dark); margin-bottom:6px;}
+  .gate-sub{font-size:13.5px; color:var(--ink-soft); margin-bottom:16px;}
+  .gate-input{width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:8px; font-size:14px; margin-bottom:10px; font-family:inherit; text-align:center;}
+  .gate-btn{width:100%; padding:10px; border-radius:8px; border:none; background:var(--berry); color:#fff; font-size:14px; cursor:pointer;}
+  .gate-error{color:var(--coral); font-size:13px; margin-top:8px; display:none;}
+
+  /* Training module rows + quiz */
+  .module-row{flex-wrap:wrap;}
+  .quiz-badge{font-size:12px; padding:2px 9px; border-radius:20px; white-space:nowrap;}
+  .quiz-pass{background:var(--sage-light); color:var(--sage);}
+  .quiz-fail{background:var(--coral-light); color:var(--coral);}
+  .quiz-none{background:var(--bg); color:var(--ink-faint); border:1px solid var(--line);}
+  .btn-tiny{border:1px solid var(--line); background:var(--surface); border-radius:7px; padding:4px 10px; font-size:12.5px; white-space:nowrap;}
+  .btn-tiny:hover{border-color:var(--ink-faint);}
+
+  .modal-overlay{position:fixed; inset:0; background:rgba(35,32,29,0.45); display:flex; align-items:center; justify-content:center; z-index:50; padding:20px;}
+  .modal-overlay.hidden{display:none;}
+  .modal-card{background:var(--surface); border-radius:12px; max-width:480px; width:100%; max-height:86vh; overflow-y:auto; padding:24px;}
+  .modal-card h2{font-size:18px; margin:0 0 4px;}
+  .modal-card .modal-sub{font-size:13.5px; color:var(--ink-soft); margin-bottom:18px;}
+  .quiz-q{margin-bottom:16px;}
+  .quiz-q .q-text{font-size:14px; font-weight:600; margin-bottom:8px;}
+  .quiz-opt{display:flex; align-items:center; gap:8px; padding:7px 10px; border:1px solid var(--line); border-radius:8px; margin-bottom:6px; font-size:13.5px; cursor:pointer;}
+  .quiz-opt:hover{border-color:var(--ink-faint);}
+  .quiz-opt input{margin:0;}
+  .modal-actions{display:flex; justify-content:flex-end; gap:8px; margin-top:18px;}
+  .quiz-result{padding:14px; border-radius:8px; margin-bottom:16px; font-size:14px;}
+  .quiz-result.pass{background:var(--sage-light); color:var(--sage);}
+  .quiz-result.fail{background:var(--coral-light); color:var(--coral);}
+</style>
+</head>
+<body class="locked">
+<div id="gate-overlay">
+  <div class="gate-card">
+    <div class="gate-brand">Gumberry<span style="font-size:14px; color:var(--ink-faint);">.ai</span></div>
+    <div class="gate-sub">Enter the pilot password to continue</div>
+    <input id="gate-input" class="gate-input" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')checkGatePassword()">
+    <button class="gate-btn" onclick="checkGatePassword()">Enter</button>
+    <div id="gate-error" class="gate-error">Incorrect password — try again.</div>
+  </div>
+</div>
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">G</div>
+      <div class="brand-name">Gumberry<span style="font-size:14px; color:var(--ink-faint); font-family:inherit;">.ai</span></div>
+    </div>
+    <div class="greeting">
+      <div class="label">Welcome back</div>
+      <div class="name">Dr. Smith</div>
+    </div>
+    <nav>
+      <button class="nav-item active" data-view="overview" onclick="showView('overview',this)">
+        <span class="lbl">Overview</span>
+      </button>
+      <button class="nav-item" data-view="problems" onclick="showView('problems',this)">
+        <span class="lbl">Operational problems</span>
+        <span class="count danger">5</span>
+      </button>
+      <button class="nav-item" data-view="sops" onclick="showView('sops',this)">
+        <span class="lbl">SOPs</span>
+        <span class="count">30</span>
+      </button>
+      <button class="nav-item" data-view="training" onclick="showView('training',this)">
+        <span class="lbl">Staff training</span>
+      </button>
+      <button class="nav-item" data-view="certs" onclick="showView('certs',this)">
+        <span class="lbl">Staff certifications</span>
+        <span class="count danger">2</span>
+      </button>
+      <button class="nav-item" data-view="performance" onclick="showView('performance',this)">
+        <span class="lbl">Practice performance</span>
+      </button>
+      <button class="nav-item" data-view="growth" onclick="showView('growth',this)">
+        <span class="lbl">Patient growth</span>
+      </button>
+      <button class="nav-item" data-view="ai" onclick="showView('ai',this)">
+        <span class="lbl">Mr. Molar</span>
+        <span class="count">4</span>
+      </button>
+    </nav>
+    <div class="sidebar-foot">Smith Family Dental<br>Prototype — progress saved on this device<br><a href="#" onclick="resetDemo(); return false;" style="color:var(--berry); text-decoration:underline;">Reset demo data</a></div>
+  </div>
+
+  <!-- MAIN -->
+  <main>
+
+    <!-- OVERVIEW -->
+    <div class="view active" id="view-overview">
+      <div class="view-header">
+        <div>
+          <h1>Good morning, Dr. Smith</h1>
+          <div class="sub">Here's where the practice stands today.</div>
+        </div>
+        <div class="today" id="today-date"></div>
+      </div>
+
+      <section class="block" style="margin-top:0;">
+        <h2>Today's huddle — before you open</h2>
+        <div class="card">
+          <div class="problem-row">
+            <div class="sev-dot" style="background:var(--sage);"></div>
+            <div class="body">
+              <div class="title">Today's goal: $2,850 scheduled production</div>
+              <div class="meta">95% of the $3,000 daily goal — on track if nothing cancels</div>
+            </div>
+          </div>
+          <div class="problem-row">
+            <div class="sev-dot sev-med"></div>
+            <div class="body">
+              <div class="title">3 new patients today — 1 still has unverified insurance</div>
+              <div class="meta">Amelia Cruz, 9:00am — verify before she arrives</div>
+            </div>
+            <button class="btn" onclick="openWorkflow('insuranceverify')">Verify now</button>
+          </div>
+          <div class="problem-row">
+            <div class="sev-dot sev-med"></div>
+            <div class="body">
+              <div class="title">Overhead running at 64%, above the 60% target this month</div>
+              <div class="meta">Worth a quick mention if anyone's ordering supplies today</div>
+            </div>
+          </div>
+          <div class="problem-row">
+            <div class="sev-dot sev-high"></div>
+            <div class="body">
+              <div class="title">Sterilization log missing 2 signatures this week</div>
+              <div class="meta">Assign someone to close it out before end of day</div>
+            </div>
+            <button class="btn" onclick="showView('problems')">View</button>
+          </div>
+        </div>
+      </section>
+
+      <div class="grid grid-3">
+        <div class="card summary-card" onclick="showView('problems')">
+          <div class="top"><div class="ic-wrap tint-coral">!</div></div>
+          <h3>Operational problems</h3>
+          <div class="stat">5 open</div>
+          <div class="desc">2 compliance, 1 revenue leak, 2 front-desk</div>
+        </div>
+        <div class="card summary-card" onclick="showView('sops')">
+          <div class="top"><div class="ic-wrap tint-berry">S</div></div>
+          <h3>SOPs</h3>
+          <div class="stat">30 documented</div>
+          <div class="desc">Across 5 categories</div>
+        </div>
+        <div class="card summary-card" onclick="showView('training')">
+          <div class="top"><div class="ic-wrap tint-sage">T</div></div>
+          <h3>Staff training</h3>
+          <div class="stat">86% complete</div>
+          <div class="desc">1 module overdue</div>
+        </div>
+        <div class="card summary-card" onclick="showView('certs')">
+          <div class="top"><div class="ic-wrap tint-coral">C</div></div>
+          <h3>Certifications</h3>
+          <div class="stat">2 need attention</div>
+          <div class="desc">1 expired, 1 expiring soon</div>
+        </div>
+        <div class="card summary-card" onclick="showView('performance')">
+          <div class="top"><div class="ic-wrap tint-berry">P</div></div>
+          <h3>Practice performance</h3>
+          <div class="stat">95% to goal</div>
+          <div class="desc">$142.3k production this month</div>
+        </div>
+        <div class="card summary-card" onclick="showView('ai')">
+          <div class="top"><div class="ic-wrap tint-sage molar-mark">🦷</div></div>
+          <h3>Mr. Molar</h3>
+          <div class="stat">4 new recommendations</div>
+          <div class="desc">Est. $51k recoverable revenue</div>
+        </div>
+      </div>
+
+      <section class="block">
+        <h2>Needs your attention today</h2>
+        <div class="card">
+          <div class="problem-row">
+            <div class="sev-dot sev-high"></div>
+            <div class="body">
+              <div class="title">Sterilization log missing 2 days this week</div>
+              <div class="meta"><span class="tag" style="background:var(--coral-light); color:var(--coral);">Compliance</span>Flagged against SOP 11 — Instrument sterilization cycle</div>
+            </div>
+          </div>
+          <div class="problem-row">
+            <div class="sev-dot sev-high"></div>
+            <div class="body">
+              <div class="title">340 hygiene patients overdue for recall</div>
+              <div class="meta"><span class="tag" style="background:var(--amber-light); color:var(--amber);">Revenue</span>Est. $51,000 in recoverable production</div>
+            </div>
+          </div>
+          <div class="problem-row">
+            <div class="sev-dot sev-med"></div>
+            <div class="body">
+              <div class="title">OSHA bloodborne pathogens training expired for 1 staff member</div>
+              <div class="meta"><span class="tag" style="background:var(--coral-light); color:var(--coral);">Compliance</span>Jasmine Rivera — expired Jul 2026</div>
+            </div>
+          </div>
+          <div class="problem-row">
+            <div class="sev-dot sev-high"></div>
+            <div class="body">
+              <div class="title">New patient call conversion is 41%, below the 60% target</div>
+              <div class="meta"><span class="tag" style="background:var(--amber-light); color:var(--amber);">Revenue</span>Devon Park, Front Desk — new patients are calling in and not getting scheduled</div>
+            </div>
+            <button class="btn" onclick="openWorkflow('callconversion')">View fix</button>
+          </div>
+          <div class="problem-row">
+            <div class="sev-dot sev-high"></div>
+            <div class="body">
+              <div class="title">5 upcoming new patients have unverified insurance</div>
+              <div class="meta"><span class="tag" style="background:var(--amber-light); color:var(--amber);">Revenue</span>Unverified coverage is the #1 cause of denied claims and surprise patient bills</div>
+            </div>
+            <button class="btn" onclick="openWorkflow('insuranceverify')">View fix</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="block">
+        <h2>Try it live</h2>
+        <div class="card">
+          <div style="font-size:13.5px; color:var(--ink-soft); margin-bottom:14px;">Instead of a document to look up, Gumberry.ai walks whoever's at the desk through the right SOP the moment something happens — with real data in front of them. Try a few triggers:</div>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:10px;">
+            <button class="btn" onclick="openWorkflow('cancellation')">Patient cancelled →</button>
+            <button class="btn" onclick="openWorkflow('noshow')">Patient no-show →</button>
+            <button class="btn" onclick="openWorkflow('inquiry')">New patient inquiry →</button>
+            <button class="btn" onclick="openWorkflow('denial')">Insurance claim denied →</button>
+            <button class="btn" onclick="openWorkflow('lowstock')">Low supply alert →</button>
+            <button class="btn" onclick="openWorkflow('callconversion')">Call conversion below target →</button>
+            <button class="btn" onclick="openWorkflow('insuranceverify')">Verify new patient insurance →</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="block" id="activity-section" style="display:none;">
+        <h2>Recent workflow activity</h2>
+        <div class="card" id="activity-list"></div>
+      </section>
+
+      <section class="block" id="pilot-progress-section" style="display:none;">
+        <h2>Pilot progress</h2>
+        <div class="card" id="pilot-progress-body"></div>
+        <div class="empty-note">All data stays on this device only. <a href="#" onclick="exportPilotData(); return false;" style="color:var(--berry); text-decoration:underline;">Export a backup file</a> periodically so nothing's lost if the browser data gets cleared.</div>
+      </section>
+    </div>
+
+    <!-- OPERATIONAL PROBLEMS -->
+    <div class="view" id="view-problems">
+      <div class="view-header">
+        <div>
+          <h1>Operational problems</h1>
+          <div class="sub">Issues surfaced automatically from your SOPs, schedule, and staff records.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="problem-row">
+          <div class="sev-dot sev-high"></div>
+          <div class="body">
+            <div class="title">Sterilization log missing 2 days this week</div>
+            <div class="meta"><span class="tag" style="background:var(--coral-light); color:var(--coral);">Compliance</span>Autoclave spore test log has no entry for Tue and Thu. Required daily under SOP 11.</div>
+          </div>
+          <button class="btn" onclick="showView('ai')">View fix</button>
+        </div>
+        <div class="problem-row">
+          <div class="sev-dot sev-high"></div>
+          <div class="body">
+            <div class="title">340 hygiene patients overdue for recall</div>
+            <div class="meta"><span class="tag" style="background:var(--amber-light); color:var(--amber);">Revenue</span>Patients past due date with no scheduled reappointment, some over 90 days overdue.</div>
+          </div>
+          <button class="btn" onclick="showView('ai')">View fix</button>
+        </div>
+        <div class="problem-row">
+          <div class="sev-dot sev-med"></div>
+          <div class="body">
+            <div class="title">OSHA bloodborne pathogens training expired for 1 staff member</div>
+            <div class="meta"><span class="tag" style="background:var(--coral-light); color:var(--coral);">Compliance</span>Jasmine Rivera's annual certification lapsed Jul 14, 2026.</div>
+          </div>
+          <button class="btn" onclick="showView('certs')">View staff</button>
+        </div>
+        <div class="problem-row">
+          <div class="sev-dot sev-high"></div>
+          <div class="body">
+            <div class="title">New patient call conversion is 41%, below the 60% target</div>
+            <div class="meta"><span class="tag" style="background:var(--amber-light); color:var(--amber);">Revenue</span>Devon Park, Front Desk. Calls are coming in but not converting into booked new-patient appointments.</div>
+          </div>
+          <button class="btn" onclick="openWorkflow('callconversion')">View fix</button>
+        </div>
+        <div class="problem-row">
+          <div class="sev-dot sev-high"></div>
+          <div class="body">
+            <div class="title">5 upcoming new patients have unverified insurance</div>
+            <div class="meta"><span class="tag" style="background:var(--amber-light); color:var(--amber);">Revenue</span>No verification on file ahead of the visit — the leading cause of denied claims and disputed patient bills.</div>
+          </div>
+          <button class="btn" onclick="openWorkflow('insuranceverify')">View fix</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SOPs -->
+    <div class="view" id="view-sops">
+      <div class="view-header">
+        <div>
+          <h1>SOPs</h1>
+          <div class="sub">Your practice's standard operating procedures, organized by area.</div>
+        </div>
+      </div>
+      <input class="sop-search" id="sop-search" placeholder="Search SOPs…" oninput="filterSops()">
+      <div id="sop-list"></div>
+    </div>
+
+    <!-- TRAINING -->
+    <div class="view" id="view-training">
+      <div class="view-header">
+        <div>
+          <h1>Staff training</h1>
+          <div class="sub">Module completion and quiz scores by team member.</div>
+        </div>
+      </div>
+      <div id="training-list"></div>
+    </div>
+
+    <!-- CERTIFICATIONS -->
+    <div class="view" id="view-certs">
+      <div class="view-header">
+        <div>
+          <h1>Staff certifications</h1>
+          <div class="sub">Licenses and required certifications across the team.</div>
+        </div>
+      </div>
+      <div class="card">
+        <table class="certs">
+          <thead><tr><th>Staff member</th><th>Certification</th><th>Expires</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Maria Gonzalez</td><td>RDH license</td><td>Jun 2027</td><td><span class="status-pill" style="background:var(--sage-light); color:var(--sage);">Valid</span></td></tr>
+            <tr><td>Jasmine Rivera</td><td>OSHA bloodborne pathogens</td><td>Jul 2026</td><td><span class="status-pill" style="background:var(--coral-light); color:var(--coral);">Expired</span></td></tr>
+            <tr><td>Devon Park</td><td>CPR / BLS</td><td>Nov 2026</td><td><span class="status-pill" style="background:var(--amber-light); color:var(--amber);">Expiring soon</span></td></tr>
+            <tr><td>Priya Shah, DDS</td><td>State dental license</td><td>Mar 2028</td><td><span class="status-pill" style="background:var(--sage-light); color:var(--sage);">Valid</span></td></tr>
+            <tr><td>Priya Shah, DDS</td><td>DEA registration</td><td>Jan 2027</td><td><span class="status-pill" style="background:var(--sage-light); color:var(--sage);">Valid</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PERFORMANCE -->
+    <div class="view" id="view-performance">
+      <div class="view-header">
+        <div>
+          <h1>Practice performance</h1>
+          <div class="sub">This month against goal.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="metric">
+          <div class="metric-top"><span class="metric-label">Today's scheduled production</span><span class="metric-value">$2,850 <span class="metric-goal">/ $3,000 daily goal</span></span></div>
+          <div class="metric-bar"><div style="width:95%"></div></div>
+        </div>
+        <div class="metric">
+          <div class="metric-top"><span class="metric-label">Overhead ratio</span><span class="metric-value">64% <span class="metric-goal">/ ≤60% target</span></span></div>
+          <div class="metric-bar"><div style="width:64%; background:var(--amber);"></div></div>
+        </div>
+        <div class="metric">
+          <div class="metric-top"><span class="metric-label">Production</span><span class="metric-value">$142,300 <span class="metric-goal">/ $150,000 goal</span></span></div>
+          <div class="metric-bar"><div style="width:95%"></div></div>
+        </div>
+        <div class="metric">
+          <div class="metric-top"><span class="metric-label">Collections rate</span><span class="metric-value">97%</span></div>
+          <div class="metric-bar"><div style="width:97%"></div></div>
+        </div>
+        <div class="metric">
+          <div class="metric-top"><span class="metric-label">New patients this month</span><span class="metric-value">28 <span class="metric-goal">/ 30 goal</span></span></div>
+          <div class="metric-bar"><div style="width:93%"></div></div>
+        </div>
+        <div class="metric">
+          <div class="metric-top"><span class="metric-label">Hygiene reappointment rate</span><span class="metric-value">82%</span></div>
+          <div class="metric-bar"><div style="width:82%"></div></div>
+        </div>
+        <div class="metric">
+          <div class="metric-top"><span class="metric-label">Case acceptance rate</span><span class="metric-value">61%</span></div>
+          <div class="metric-bar"><div style="width:61%"></div></div>
+        </div>
+        <div class="metric">
+          <div class="metric-top"><span class="metric-label">Cancellation / no-show rate</span><span class="metric-value">9%</span></div>
+          <div class="metric-bar"><div style="width:9%; background:var(--amber);"></div></div>
+        </div>
+        <div class="metric" id="metric-callconversion">
+          <div class="metric-top"><span class="metric-label">New patient call conversion — front desk</span><span class="metric-value" id="callconversion-value">41% <span class="metric-goal">/ 60% goal</span></span></div>
+          <div class="metric-bar"><div id="callconversion-bar" style="width:41%; background:var(--coral);"></div></div>
+        </div>
+        <div class="metric" id="metric-insuranceverify">
+          <div class="metric-top"><span class="metric-label">New patients verified before visit</span><span class="metric-value" id="insuranceverify-value">68% <span class="metric-goal">/ 95% goal</span></span></div>
+          <div class="metric-bar"><div id="insuranceverify-bar" style="width:68%; background:var(--coral);"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PATIENT GROWTH -->
+    <div class="view" id="view-growth">
+      <div class="view-header">
+        <div>
+          <h1>Patient growth</h1>
+          <div class="sub">Where patients are coming from, whether cases are closing, and how the practice is showing up publicly.</div>
+        </div>
+      </div>
+
+      <section class="block" style="margin-top:0;">
+        <h2>Where new patients are coming from</h2>
+        <div class="card">
+          <div class="metric">
+            <div class="metric-top"><span class="metric-label">Existing patient referral <span class="tag" style="background:var(--sage-light); color:var(--sage);">Internal</span></span><span class="metric-value">34%</span></div>
+            <div class="metric-bar"><div style="width:34%; background:var(--sage);"></div></div>
+          </div>
+          <div class="metric">
+            <div class="metric-top"><span class="metric-label">Google / web search <span class="tag" style="background:var(--berry-light); color:var(--berry);">External</span></span><span class="metric-value">28%</span></div>
+            <div class="metric-bar"><div style="width:28%;"></div></div>
+          </div>
+          <div class="metric">
+            <div class="metric-top"><span class="metric-label">Insurance directory listing <span class="tag" style="background:var(--berry-light); color:var(--berry);">External</span></span><span class="metric-value">18%</span></div>
+            <div class="metric-bar"><div style="width:18%;"></div></div>
+          </div>
+          <div class="metric">
+            <div class="metric-top"><span class="metric-label">Walk-in <span class="tag" style="background:var(--berry-light); color:var(--berry);">External</span></span><span class="metric-value">8%</span></div>
+            <div class="metric-bar"><div style="width:8%;"></div></div>
+          </div>
+          <div class="metric">
+            <div class="metric-top"><span class="metric-label">Social media <span class="tag" style="background:var(--berry-light); color:var(--berry);">External</span></span><span class="metric-value">7%</span></div>
+            <div class="metric-bar"><div style="width:7%;"></div></div>
+          </div>
+          <div class="metric">
+            <div class="metric-top"><span class="metric-label">Other / community <span class="tag" style="background:var(--sage-light); color:var(--sage);">Internal</span></span><span class="metric-value">5%</span></div>
+            <div class="metric-bar"><div style="width:5%;"></div></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="block">
+        <h2>Patient flow — are we closing the cases we get?</h2>
+        <div class="card">
+          <div class="metric">
+            <div class="metric-top"><span class="metric-label">New inquiries this month</span><span class="metric-value">120</span></div>
+            <div class="metric-bar"><div style="width:100%;"></div></div>
+          </div>
+          <div class="metric">
+            <div class="metric-top"><span class="metric-label">Scheduled</span><span class="metric-value">96 <span class="metric-goal">80%</span></span></div>
+            <div class="metric-bar"><div style="width:80%;"></div></div>
+          </div>
+          <div class="metric">
+            <div class="metric-top"><span class="metric-label">Showed up</span><span class="metric-value">84 <span class="metric-goal">70%</span></span></div>
+            <div class="metric-bar"><div style="width:70%;"></div></div>
+          </div>
+          <div class="metric">
+            <div class="metric-top"><span class="metric-label">Case presented</span><span class="metric-value">61 <span class="metric-goal">51%</span></span></div>
+            <div class="metric-bar"><div style="width:51%; background:var(--amber);"></div></div>
+          </div>
+          <div class="metric">
+            <div class="metric-top"><span class="metric-label">Case accepted</span><span class="metric-value">38 <span class="metric-goal">32%</span></span></div>
+            <div class="metric-bar"><div style="width:32%; background:var(--coral);"></div></div>
+          </div>
+          <div class="metric">
+            <div class="metric-top"><span class="metric-label">Treatment completed</span><span class="metric-value">30 <span class="metric-goal">25%</span></span></div>
+            <div class="metric-bar"><div style="width:25%; background:var(--coral);"></div></div>
+          </div>
+          <div class="empty-note">Biggest drop-off: case presented → case accepted (61 → 38). That gap is where Mr. Molar's case-acceptance recommendations focus.</div>
+        </div>
+      </section>
+
+      <section class="block">
+        <h2>Case acceptance — dentist vs. treatment coordinator</h2>
+        <div class="card">
+          <div class="metric">
+            <div class="metric-top"><span class="metric-label">Monica Reyes, Treatment Coordinator</span><span class="metric-value">71%</span></div>
+            <div class="metric-bar"><div style="width:71%; background:var(--sage);"></div></div>
+          </div>
+          <div class="metric">
+            <div class="metric-top"><span class="metric-label">Dr. Smith</span><span class="metric-value">64%</span></div>
+            <div class="metric-bar"><div style="width:64%; background:var(--sage);"></div></div>
+          </div>
+          <div class="metric">
+            <div class="metric-top"><span class="metric-label">Priya Shah, DDS</span><span class="metric-value">58%</span></div>
+            <div class="metric-bar"><div style="width:58%; background:var(--amber);"></div></div>
+          </div>
+          <div class="metric">
+            <div class="metric-top"><span class="metric-label">Hygiene → same-day restorative acceptance</span><span class="metric-value">22% <span class="metric-goal">/ 35% goal</span></span></div>
+            <div class="metric-bar"><div style="width:22%; background:var(--coral);"></div></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="block">
+        <h2>Marketing — leads by channel</h2>
+        <div class="card">
+          <table class="certs">
+            <thead><tr><th>Channel</th><th>Leads this month</th><th>Converted to visit</th><th>Conversion rate</th></tr></thead>
+            <tbody>
+              <tr><td>Existing patient referral program</td><td>25</td><td>13</td><td><span class="status-pill" style="background:var(--sage-light); color:var(--sage);">52%</span></td></tr>
+              <tr><td>Google Ads</td><td id="mkt-googleads-leads">40</td><td id="mkt-googleads-converted">11</td><td><span class="status-pill" id="mkt-googleads-rate" style="background:var(--amber-light); color:var(--amber);">28%</span></td></tr>
+              <tr><td>Website organic search</td><td>20</td><td>6</td><td><span class="status-pill" style="background:var(--amber-light); color:var(--amber);">30%</span></td></tr>
+              <tr><td>Instagram / Facebook</td><td>15</td><td>3</td><td><span class="status-pill" style="background:var(--coral-light); color:var(--coral);">18%</span></td></tr>
+              <tr><td>Community event / sponsorship</td><td>10</td><td>5</td><td><span class="status-pill" style="background:var(--sage-light); color:var(--sage);">50%</span></td></tr>
+            </tbody>
+          </table>
+          <div class="empty-note">Referrals and community events convert far better than paid social — worth weighing against what's actually being spent on each channel.</div>
+        </div>
+      </section>
+
+      <section class="block">
+        <h2>Practice reviews</h2>
+        <div class="card">
+          <div style="display:flex; gap:32px; flex-wrap:wrap; margin-bottom:14px;">
+            <div><div style="font-size:26px; font-weight:600;">4.6 ★</div><div style="font-size:12.5px; color:var(--ink-faint);">312 total reviews</div></div>
+            <div><div style="font-size:26px; font-weight:600;">+14</div><div style="font-size:12.5px; color:var(--ink-faint);">new reviews this month</div></div>
+            <div><div style="font-size:26px; font-weight:600;" id="review-response-rate">92%</div><div style="font-size:12.5px; color:var(--ink-faint);">practice response rate</div></div>
+          </div>
+          <div class="problem-row">
+            <div class="sev-dot" style="background:var(--sage);"></div>
+            <div class="body"><div class="title">"Friendly front desk, barely any wait — my kids actually don't mind coming here."</div><div class="meta">Google review, 5★ · 3 days ago</div></div>
+          </div>
+          <div class="problem-row" id="review-negative-row">
+            <div class="sev-dot" id="review-negative-dot" style="background:var(--amber);"></div>
+            <div class="body"><div class="title">"Good visit but the insurance estimate I was given changed after the fact."</div><div class="meta">Google review, 3★ · 1 week ago · <span id="review-negative-status">Not yet responded to</span></div></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="block">
+        <h2>Try it live</h2>
+        <div class="card">
+          <div style="font-size:13.5px; color:var(--ink-soft); margin-bottom:14px;">Same idea as the operational triggers — Gumberry.ai reacts to growth signals as they happen, not just at month-end reporting.</div>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:10px;">
+            <button class="btn" onclick="openWorkflow('negativereview')">Negative review posted →</button>
+            <button class="btn" onclick="openWorkflow('newlead')">New lead from Google Ads →</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- AI RECOMMENDATIONS -->
+    <div class="view" id="view-ai">
+      <div class="view-header">
+        <div style="display:flex; gap:14px; align-items:flex-start;">
+          <div class="molar-avatar">🦷</div>
+          <div>
+            <h1>Mr. Molar</h1>
+            <div class="sub">Your practice's AI assistant. Here's what he's noticed and what he suggests doing about it.</div>
+          </div>
+        </div>
+      </div>
+      <div id="ai-list">
+        <div class="rec-card" data-rec="1">
+          <div class="molar-avatar">🦷</div>
+          <div class="rec-body">
+            <div class="rec-title">Send recall reminders to 340 overdue hygiene patients</div>
+            <div class="rec-desc">Estimated $51,000 in recoverable production. Recommend a text + email batch this week.</div>
+            <div class="rec-actions">
+              <button class="btn" onclick="acceptRec(this)">Review list</button>
+              <button class="btn btn-quiet" onclick="dismissRec(this)">Dismiss</button>
+            </div>
+          </div>
+        </div>
+        <div class="rec-card" data-rec="2">
+          <div class="molar-avatar">🦷</div>
+          <div class="rec-body">
+            <div class="rec-title">Renew OSHA bloodborne pathogens training for Jasmine Rivera</div>
+            <div class="rec-desc">Certification expired Jul 2026. Schedule renewal before next inspection window.</div>
+            <div class="rec-actions">
+              <button class="btn" onclick="acceptRec(this)">Assign</button>
+              <button class="btn btn-quiet" onclick="dismissRec(this)">Dismiss</button>
+            </div>
+          </div>
+        </div>
+        <div class="rec-card" data-rec="3">
+          <div class="molar-avatar">🦷</div>
+          <div class="rec-body">
+            <div class="rec-title">Close the gap in the sterilization log</div>
+            <div class="rec-desc">2 unsigned days this week. Add an end-of-day checklist reminder for closing staff.</div>
+            <div class="rec-actions">
+              <button class="btn" onclick="acceptRec(this)">Fix now</button>
+              <button class="btn btn-quiet" onclick="dismissRec(this)">Dismiss</button>
+            </div>
+          </div>
+        </div>
+        <div class="rec-card" data-rec="4">
+          <div class="molar-avatar">🦷</div>
+          <div class="rec-body">
+            <div class="rec-title">Case acceptance dipped 8% this month</div>
+            <div class="rec-desc">Consider introducing financing options at treatment presentation — see SOP 19.</div>
+            <div class="rec-actions">
+              <button class="btn" onclick="showView('sops')">View SOP</button>
+              <button class="btn btn-quiet" onclick="dismissRec(this)">Dismiss</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div class="modal-overlay hidden" id="quiz-modal">
+  <div class="modal-card" id="quiz-modal-card"></div>
+</div>
+
+<script>
+/* ---- Password gate — change this before sharing with your pilot ---- */
+var GATE_PASSWORD = "gumberry2026";
+(function(){
+  if(localStorage.getItem('gumberry_unlocked') === 'yes'){
+    document.body.classList.remove('locked');
+  }
+})();
+function checkGatePassword(){
+  var input = document.getElementById('gate-input');
+  var error = document.getElementById('gate-error');
+  if(input.value === GATE_PASSWORD){
+    localStorage.setItem('gumberry_unlocked', 'yes');
+    document.body.classList.remove('locked');
+  } else {
+    error.style.display = 'block';
+    input.value = '';
+    input.focus();
+  }
+}
+
+var STORAGE_KEY = 'gumberry-demo-state-v1';
+function loadDemoState(){
+  try{
+    var raw = localStorage.getItem(STORAGE_KEY);
+    var parsed = raw ? JSON.parse(raw) : {training:{}, ai:{dismissed:[], accepted:[]}, activity:[], performance:{callConversion:41, insuranceVerified:68}, usageDays:[], pilotStartDate:null};
+    if(!parsed.activity) parsed.activity = [];
+    if(!parsed.training) parsed.training = {};
+    if(!parsed.ai) parsed.ai = {dismissed:[], accepted:[]};
+    if(!parsed.performance) parsed.performance = {callConversion:41, insuranceVerified:68};
+    if(parsed.performance.insuranceVerified === undefined) parsed.performance.insuranceVerified = 68;
+    if(!parsed.usageDays) parsed.usageDays = [];
+    if(parsed.pilotStartDate === undefined) parsed.pilotStartDate = null;
+    parsed.activity.forEach(function(a, i){
+      if(a.id === undefined) a.id = 'legacy-'+i+'-'+Date.now();
+      if(a.feedback === undefined) a.feedback = null;
+      if(a.by === undefined) a.by = '';
+    });
+    return parsed;
+  }catch(e){
+    return {training:{}, ai:{dismissed:[], accepted:[]}, activity:[], performance:{callConversion:41, insuranceVerified:68}, usageDays:[], pilotStartDate:null};
+  }
+}
+function saveDemoState(state){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){ /* storage unavailable, continue without persistence */ }
+}
+var demoState = loadDemoState();
+function resetDemo(){
+  try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
+  location.reload();
+}
+
+function showView(name, el){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  var target = el || document.querySelector('.nav-item[data-view="'+name+'"]');
+  if(target) target.classList.add('active');
+}
+
+document.getElementById('today-date').textContent = new Date().toLocaleDateString(undefined,{weekday:'long', month:'long', day:'numeric'});
+
+var sopData = {
+  "Clinical care":[
+    "Comprehensive new patient exam","Periodontal charting protocol","Digital radiograph capture and QA",
+    "Composite restoration workflow","Root canal therapy prep and assist","Extraction post-op instructions",
+    "Pediatric behavior management","Nitrous oxide administration","Local anesthesia protocol","Denture delivery and adjustment"
+  ],
+  "Infection control & safety":[
+    "Instrument sterilization cycle","Operatory turnover between patients","PPE donning and doffing",
+    "Sharps disposal and biohazard waste","Waterline testing and maintenance","Autoclave spore testing log"
+  ],
+  "Front office & scheduling":[
+    "New patient scheduling and intake","Insurance verification","Treatment plan presentation and financing",
+    "Recall and reactivation calls","Same-day cancellation fill protocol","End-of-day reconciliation"
+  ],
+  "Human resources":[
+    "New hire onboarding checklist","PTO request and approval","Performance review cycle","Staff meeting cadence"
+  ],
+  "Emergency procedures":[
+    "Medical emergency response","Fire evacuation plan","Syncope and allergic reaction protocol","Equipment failure escalation"
+  ]
+};
+var updatedDates = ["Aug 2026","Jul 2026","Jun 2026","May 2026","Sep 2025"];
+
+function renderSops(filter){
+  filter = (filter||"").toLowerCase();
+  var container = document.getElementById('sop-list');
+  container.innerHTML = "";
+  var n = 0;
+  Object.keys(sopData).forEach(function(cat, ci){
+    var items = sopData[cat].filter(function(t){ return t.toLowerCase().indexOf(filter) !== -1; });
+    if(items.length === 0) return;
+    var catDiv = document.createElement('div');
+    catDiv.className = 'sop-cat';
+    var h3 = document.createElement('h3');
+    h3.textContent = cat;
+    catDiv.appendChild(h3);
+    items.forEach(function(title){
+      n++;
+      var row = document.createElement('div');
+      row.className = 'sop-item';
+      row.innerHTML = '<span class="n">'+n+'</span><span class="t">'+title+'</span><span class="updated">Updated '+updatedDates[ci % updatedDates.length]+'</span>';
+      catDiv.appendChild(row);
+    });
+    container.appendChild(catDiv);
+  });
+  if(n === 0){
+    container.innerHTML = '<div class="empty-note">No SOPs match your search.</div>';
+  }
+}
+function filterSops(){ renderSops(document.getElementById('sop-search').value); }
+renderSops();
+
+var quizBank = {
+  "Infection control refresher":[
+    {q:"How often should autoclave spore testing be logged?", opts:["Weekly","Daily","Monthly","Only after new equipment"], a:1},
+    {q:"What should you do if a sterilization cycle fails?", opts:["Use the instruments anyway","Re-run the cycle and quarantine the load until it passes","Ignore it if it's a small load","Wait until the next day"], a:1},
+    {q:"When should PPE be changed between patients?", opts:["Every patient","Every 3 patients","At the end of the day","Only if visibly soiled"], a:0}
+  ],
+  "OSHA bloodborne pathogens":[
+    {q:"How often must bloodborne pathogens training be renewed?", opts:["Every 5 years","Annually","Once, at hire","Every 2 years"], a:1},
+    {q:"What's the first step after a sharps injury?", opts:["Finish the procedure","Wash the area and report immediately","Wait and see","Document it at end of shift"], a:1},
+    {q:"Where should sharps be disposed of?", opts:["Regular trash","Puncture-resistant biohazard container","Recycling bin","Back in the drawer"], a:1}
+  ],
+  "Insurance verification":[
+    {q:"When should insurance be verified for a new patient?", opts:["After the appointment","Before the appointment","Only if asked","Never, patient handles it"], a:1},
+    {q:"What should you confirm besides active coverage?", opts:["Nothing else needed","Remaining benefits and frequency limits","Patient's home address only","The dentist's schedule"], a:1},
+    {q:"Who follows up if a verification turns out wrong?", opts:["The patient, always","Front desk should catch it and correct before the visit","The insurer only","No one, it's fine"], a:1}
+  ],
+  "HIPAA 2026 update":[
+    {q:"Can patient records be discussed in the reception area?", opts:["Yes, always","No — keep private conversations away from other patients","Only in a whisper","Only with family present"], a:1},
+    {q:"What's required before sharing records with another provider?", opts:["A signed release or authorization","Nothing, just send it","A verbal ok is enough","Manager approval only"], a:0},
+    {q:"How should devices with patient data be secured?", opts:["Left unlocked for convenience","Password protected and locked when unattended","Shared login for the whole team","No security needed"], a:1}
+  ],
+  "Recall calls script":[
+    {q:"What's the goal of a recall call?", opts:["Sell unrelated products","Get the overdue patient scheduled","Read a long disclaimer","Confirm their address only"], a:1},
+    {q:"How many contact attempts before flagging inactive?", opts:["1","3, across different channels","10","0"], a:1},
+    {q:"What tone should a recall call use?", opts:["Apologetic and vague","Warm and direct about why it matters","Scripted with no personalization","Urgent and pressuring"], a:1}
+  ],
+  "Staff scheduling & payroll basics":[
+    {q:"Where should approved time-off be reflected?", opts:["Nowhere, just remember it","The shared schedule, before it's approved elsewhere","A sticky note","It doesn't need tracking"], a:1},
+    {q:"What should happen before payroll is submitted?", opts:["A quick review against logged hours","Nothing, just submit it","Ask the dentist to guess","Skip odd weeks"], a:0}
+  ],
+  "OSHA program oversight":[
+    {q:"Who should confirm staff certifications stay current?", opts:["No one, staff self-track","The practice manager, on a set schedule","Only during an inspection","The front desk"], a:1},
+    {q:"What should trigger an update to the OSHA exposure control plan?", opts:["A change in procedures or equipment","Nothing, it's set once","A patient complaint only","The weather"], a:0}
+  ]
+};
+var defaultQuiz = [
+  {q:"Where should you go if you're unsure how to complete this procedure?", opts:["Guess and move on","Check the SOP or ask a lead team member","Skip the step","Ask a patient"], a:1},
+  {q:"How often should this module be refreshed?", opts:["Never","On the schedule the practice sets","Only if there's a problem","Whenever you feel like it"], a:1}
+];
+
+var staffData = [
+  {initials:"MG", name:"Maria Gonzalez", role:"Lead Hygienist", modules:[
+    {name:"Infection control refresher", pct:100, quizScore:9, quizTotal:10},
+    {name:"New patient exam protocol", pct:100, quizScore:10, quizTotal:10},
+    {name:"HIPAA 2026 update", pct:80, quizScore:null, quizTotal:3}
+  ]},
+  {initials:"JR", name:"Jasmine Rivera", role:"Dental Assistant", modules:[
+    {name:"OSHA bloodborne pathogens", pct:100, expired:true, quizScore:null, quizTotal:3},
+    {name:"Radiograph QA", pct:90, quizScore:8, quizTotal:10}
+  ]},
+  {initials:"DP", name:"Devon Park", role:"Front Desk", modules:[
+    {name:"Insurance verification", pct:100, quizScore:10, quizTotal:10},
+    {name:"Recall calls script", pct:60, quizScore:null, quizTotal:3}
+  ]},
+  {initials:"RO", name:"Renee Ortiz", role:"Practice Manager", modules:[
+    {name:"HIPAA 2026 update", pct:100, quizScore:10, quizTotal:3},
+    {name:"OSHA program oversight", pct:100, quizScore:9, quizTotal:2},
+    {name:"Staff scheduling & payroll basics", pct:70, quizScore:null, quizTotal:2}
+  ]},
+  {initials:"PS", name:"Priya Shah, DDS", role:"Associate Dentist", modules:[
+    {name:"Nitrous oxide protocol", pct:100, quizScore:10, quizTotal:10},
+    {name:"Medical emergency response", pct:100, quizScore:10, quizTotal:10}
+  ]}
+];
+
+function applySavedTraining(){
+  staffData.forEach(function(staff, si){
+    staff.modules.forEach(function(mod, mi){
+      var key = si+'-'+mi;
+      if(demoState.training[key]){
+        mod.quizScore = demoState.training[key].score;
+        mod.quizTotal = demoState.training[key].total;
+      }
+    });
+  });
+}
+applySavedTraining();
+
+function updatePerformanceMetric(key, elId, goal){
+  var val = demoState.performance[key];
+  var bar = document.getElementById(elId+'-bar');
+  var label = document.getElementById(elId+'-value');
+  if(!bar || !label) return;
+  bar.style.width = val + '%';
+  bar.style.background = val >= goal ? 'var(--sage)' : 'var(--coral)';
+  label.innerHTML = val + '% <span class="metric-goal">/ '+goal+'% goal</span>';
+}
+function refreshPerformanceMetrics(){
+  updatePerformanceMetric('callConversion', 'callconversion', 60);
+  updatePerformanceMetric('insuranceVerified', 'insuranceverify', 95);
+}
+refreshPerformanceMetrics();
+
+function renderTraining(){
+  var container = document.getElementById('training-list');
+  container.innerHTML = "";
+  staffData.forEach(function(staff, si){
+    var card = document.createElement('div');
+    card.className = 'card staff-card';
+    var head = document.createElement('div');
+    head.className = 'staff-head';
+    head.innerHTML = '<div class="who"><div class="avatar">'+staff.initials+'</div><div><div class="name">'+staff.name+'</div><div class="role">'+staff.role+'</div></div></div>';
+    card.appendChild(head);
+    staff.modules.forEach(function(mod, mi){
+      var row = document.createElement('div');
+      row.className = 'module-row';
+      var barHtml = mod.expired
+        ? '<div class="bar expired"><div style="width:100%"></div></div><div class="pct" style="color:var(--coral)">Expired</div>'
+        : '<div class="bar"><div style="width:'+mod.pct+'%"></div></div><div class="pct">'+mod.pct+'%</div>';
+      var quizHtml;
+      if(mod.quizScore === null){
+        quizHtml = '<span class="quiz-badge quiz-none">Quiz not taken</span><button class="btn-tiny" onclick="openQuiz('+si+','+mi+')">Take quiz</button>';
+      } else {
+        var passed = mod.quizScore / mod.quizTotal >= 0.7;
+        quizHtml = '<span class="quiz-badge '+(passed?'quiz-pass':'quiz-fail')+'">Quiz: '+mod.quizScore+'/'+mod.quizTotal+'</span><button class="btn-tiny" onclick="openQuiz('+si+','+mi+')">Retake</button>';
+      }
+      row.innerHTML = '<div class="m-name">'+mod.name+'</div>'+barHtml+quizHtml;
+      card.appendChild(row);
+    });
+    container.appendChild(card);
+  });
+}
+renderTraining();
+
+var activeQuiz = null;
+function openQuiz(staffIdx, modIdx){
+  var mod = staffData[staffIdx].modules[modIdx];
+  var questions = quizBank[mod.name] || defaultQuiz;
+  activeQuiz = {staffIdx:staffIdx, modIdx:modIdx, questions:questions};
+  var html = '<h2>'+mod.name+'</h2><div class="modal-sub">Quiz for '+staffData[staffIdx].name+'</div><form id="quiz-form">';
+  questions.forEach(function(q, qi){
+    html += '<div class="quiz-q"><div class="q-text">'+(qi+1)+'. '+q.q+'</div>';
+    q.opts.forEach(function(opt, oi){
+      html += '<label class="quiz-opt"><input type="radio" name="q'+qi+'" value="'+oi+'" required>'+opt+'</label>';
+    });
+    html += '</div>';
+  });
+  html += '<div class="modal-actions"><button type="button" class="btn" onclick="closeQuizModal()">Cancel</button><button type="submit" class="btn">Submit quiz</button></div></form>';
+  document.getElementById('quiz-modal-card').innerHTML = html;
+  document.getElementById('quiz-modal').classList.remove('hidden');
+  document.getElementById('quiz-form').addEventListener('submit', function(e){
+    e.preventDefault();
+    submitQuiz();
+  });
+}
+function submitQuiz(){
+  var form = document.getElementById('quiz-form');
+  var questions = activeQuiz.questions;
+  var correct = 0;
+  questions.forEach(function(q, qi){
+    var picked = form.querySelector('input[name="q'+qi+'"]:checked');
+    if(picked && parseInt(picked.value,10) === q.a) correct++;
+  });
+  var mod = staffData[activeQuiz.staffIdx].modules[activeQuiz.modIdx];
+  mod.quizScore = correct;
+  mod.quizTotal = questions.length;
+  demoState.training[activeQuiz.staffIdx+'-'+activeQuiz.modIdx] = {score:correct, total:questions.length};
+  saveDemoState(demoState);
+  var passed = correct / questions.length >= 0.7;
+  var card = document.getElementById('quiz-modal-card');
+  card.innerHTML = '<h2>'+mod.name+'</h2>'+
+    '<div class="quiz-result '+(passed?'pass':'fail')+'">Scored '+correct+' / '+questions.length+' — '+(passed?'Passed':'Needs a retake')+'</div>'+
+    '<div class="modal-actions"><button class="btn" onclick="closeQuizModal()">Done</button></div>';
+  renderTraining();
+}
+function closeQuizModal(){
+  document.getElementById('quiz-modal').classList.add('hidden');
+  activeQuiz = null;
+}
+
+/* ---- Live workflow engine — SOPs triggered by real events ---- */
+function parseNames(str){
+  return (str||'').split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+}
+
+function radioStep(name, opts){
+  return function(answers){
+    return opts.map(function(opt){
+      var checked = answers[name] === opt ? 'checked' : '';
+      return '<label class="quiz-opt"><input type="radio" name="'+name+'" value="'+opt+'" '+checked+' onchange="wf.answers.'+name+'=this.value">'+opt+'</label>';
+    }).join('');
+  };
+}
+
+var workflows = {
+
+  cancellation: {
+    title:"Patient cancelled",
+    intake:[
+      {key:'patientName', label:'Patient (placeholder name — no real names)', type:'text', placeholder:'e.g. Patient A'},
+      {key:'apptType', label:'Appointment type', type:'select', options:['Hygiene recall','New patient exam','Restorative/filling','Other']},
+      {key:'apptLength', label:'Appointment length', type:'select', options:['30 min','45 min','60 min']},
+      {key:'apptTime', label:'Appointment time', type:'text', placeholder:'e.g. Today 2:30pm'}
+    ],
+    subtitle: function(a){ return 'Cancellation SOP — '+(a.patientName||'Patient')+', '+(a.apptLength||'')+' '+(a.apptType||'appointment').toLowerCase()+', '+(a.apptTime||''); },
+    steps:[
+      {label:"Check cancellation reason", render: radioStep('reason', ['Patient illness','Scheduling conflict','No longer needed','Other'])},
+      {label:"Check your ASAP list in Open Dental", render: function(answers){
+        return '<div style="font-size:13px; color:var(--ink-soft); margin-bottom:10px;">Open Open Dental\'s Unscheduled/ASAP list and look for patients matching a '+(answers.apptLength||'')+' '+(answers.apptType||'').toLowerCase()+'. Jot down placeholder names (comma-separated) for who you\'ll try — never real names.</div>'+
+          '<input type="text" placeholder="e.g. Patient B, Patient C" style="width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:8px; font-size:13.5px; font-family:inherit;" oninput="wf.answers.asapNames=this.value">';
+      }},
+      {label:"Contact patients matching appointment length", render: function(answers){
+        var names = parseNames(answers.asapNames);
+        if(!names.length) return '<div class="empty-note">No names entered on the previous step — go back and jot down who you found on the ASAP list.</div>';
+        return names.map(function(n, pi){
+          return '<div style="display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 0; border-bottom:1px solid var(--line);">'+
+            '<span style="font-size:13.5px;">'+n+'</span>'+
+            '<select style="font-size:13px; padding:5px 8px; border:1px solid var(--line); border-radius:6px;" onchange="wf.answers.contacts['+pi+']=this.value">'+
+              '<option value="">Not yet contacted</option><option value="accepted">Reached — accepted</option>'+
+              '<option value="declined">Reached — declined</option><option value="noanswer">No answer</option></select></div>';
+        }).join('');
+      }},
+      {label:"Offer opening", render: function(answers){
+        var names = parseNames(answers.asapNames);
+        var acceptedIdx = Object.keys(answers.contacts||{}).find(function(k){ return answers.contacts[k] === 'accepted'; });
+        return acceptedIdx !== undefined && names[acceptedIdx]
+          ? '<div class="quiz-result pass">Slot offered to '+names[acceptedIdx]+' — awaiting their confirmation.</div>'
+          : '<div class="quiz-result fail">No patient has accepted yet. Go back to keep contacting the list, or continue if the slot may go unfilled.</div>';
+      }},
+      {label:"Document outcome", render: function(answers){
+        return '<div style="font-size:13.5px; color:var(--ink-soft); margin-bottom:8px;">Reason: '+(answers.reason||'—')+'</div>'+
+          '<textarea placeholder="Optional notes for the record…" style="width:100%; min-height:70px; border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-family:inherit; font-size:13.5px;" oninput="wf.answers.notes=this.value"></textarea>';
+      }},
+      {label:"Lost production", render: function(answers){
+        var filled = Object.keys(answers.contacts||{}).some(function(k){ return answers.contacts[k] === 'accepted'; });
+        return filled ? '<div class="quiz-result pass">Slot filled — no lost production.</div>' : '<div class="quiz-result fail">Slot unfilled — marking $'+lengthToValue(answers.apptLength)+' as lost production for today.</div>';
+      }},
+      {label:"Trigger reactivation campaign", render: function(answers){
+        return '<div style="font-size:13.5px; color:var(--ink-soft);">Add '+(answers.patientName||'this patient')+' to the recall/reactivation campaign in Open Dental so this doesn\'t turn into a lost patient.</div>';
+      }}
+    ],
+    finish: function(answers){
+      var names = parseNames(answers.asapNames);
+      var acceptedIdx = Object.keys(answers.contacts||{}).find(function(k){ return answers.contacts[k] === 'accepted'; });
+      if(acceptedIdx !== undefined && names[acceptedIdx]) return {summary:'Slot filled by '+names[acceptedIdx]+'.', value:0};
+      var lost = lengthToValue(answers.apptLength);
+      return {summary:'$'+lost+' logged as lost production, reactivation campaign started for '+(answers.patientName||'patient')+'.', value:lost};
+    },
+    subject: function(a){ return a.patientName || 'Patient'; }
+  },
+
+  noshow: {
+    title:"Patient no-show",
+    intake:[
+      {key:'patientName', label:'Patient (placeholder name — no real names)', type:'text', placeholder:'e.g. Patient B'},
+      {key:'apptType', label:'Appointment type', type:'select', options:['Restorative/filling','Hygiene recall','New patient exam','Other']},
+      {key:'apptLength', label:'Appointment length', type:'select', options:['30 min','45 min','60 min']},
+      {key:'apptTime', label:'Appointment time', type:'text', placeholder:'e.g. Today 10:00am'},
+      {key:'noShowCount', label:'No-shows in the last 12 months (including this one)', type:'select', options:['1st','2nd','3rd or more']}
+    ],
+    subtitle: function(a){ return 'No-show SOP — '+(a.patientName||'Patient')+', '+(a.apptLength||'')+' '+(a.apptType||'').toLowerCase()+', '+(a.apptTime||'')+' ('+(a.noShowCount||'1st')+' no-show this year)'; },
+    steps:[
+      {label:"Confirm this is a no-show, not a late cancellation", render: radioStep('confirm', ['Yes — patient never called','No — they called after start time'])},
+      {label:"Attempt to reach the patient", render: radioStep('contact', ['Reached — rescheduled','Reached — no reschedule yet','No answer, left voicemail'])},
+      {label:"Check no-show history", render: function(answers){
+        var repeat = answers.noShowCount && answers.noShowCount !== '1st';
+        return '<div style="font-size:13.5px; color:var(--ink-soft);">This is the '+(answers.noShowCount||'1st')+' no-show in the last 12 months. Policy: a $50 fee applies at 2+ in a rolling 12 months.'+(repeat ? '' : ' First occurrence — fee is waived, warning noted.')+'</div>';
+      }},
+      {label:"Apply no-show policy", render: function(answers){
+        var repeat = answers.noShowCount && answers.noShowCount !== '1st';
+        return repeat
+          ? '<div class="quiz-result fail">$50 no-show fee applied to account — this is the '+answers.noShowCount+' occurrence this year.</div>'
+          : '<div class="quiz-result pass">First no-show — fee waived, warning noted on the chart.</div>';
+      }},
+      {label:"Check your ASAP list in Open Dental for the open slot", render: function(answers){
+        return '<div style="font-size:13.5px; color:var(--ink-soft);">Open Open Dental\'s Unscheduled/ASAP list and look for a '+(answers.apptLength||'')+' '+(answers.apptType||'').toLowerCase()+' match, then try reaching them.</div>';
+      }},
+      {label:"Mark lost production if unfilled", render: radioStep('filled', ['Slot filled from ASAP list','Slot went unfilled'])},
+      {label:"Flag repeat pattern for provider review", render: function(answers){
+        var repeat = answers.noShowCount && answers.noShowCount !== '1st';
+        return repeat
+          ? '<div style="font-size:13.5px; color:var(--ink-soft);">'+answers.noShowCount+' no-show this year — flagged for Dr. Smith to review at next team huddle.</div>'
+          : '<div style="font-size:13.5px; color:var(--ink-soft);">First occurrence — no provider flag needed yet.</div>';
+      }}
+    ],
+    finish: function(answers){
+      var repeat = answers.noShowCount && answers.noShowCount !== '1st';
+      if(answers.filled === 'Slot went unfilled'){
+        var lost = lengthToValue(answers.apptLength);
+        return {summary:'$'+lost+' logged as lost production'+(repeat ? '; flagged for provider review.' : '.'), value:lost};
+      }
+      return {summary:'Slot backfilled from ASAP list'+(repeat ? '; flagged for provider review.' : '.'), value:0};
+    },
+    subject: function(a){ return a.patientName || 'Patient'; }
+  },
+
+  inquiry: {
+    title:"New patient inquiry", subtitle:"New patient SOP — inbound call from Jordan Blake",
+    steps:[
+      {label:"Capture inquiry source", render: radioStep('source', ['Referral','Google search','Insurance directory','Walk-in','Social media'])},
+      {label:"Ask and verify insurance", render: radioStep('insurance', ['In-network — confirmed','Out-of-network','Self-pay','No insurance'])},
+      {label:"Check next available new-patient slot", render: function(){
+        return '<div style="font-size:13.5px; color:var(--ink-soft); margin-bottom:8px;">Openings found:</div>'+
+          ['Tue Sep 9, 9:00am','Thu Sep 11, 2:00pm','Fri Sep 12, 10:30am'].map(function(t){
+            return '<div style="padding:8px 10px; border:1px solid var(--line); border-radius:8px; margin-bottom:6px; font-size:13.5px;">'+t+'</div>';
+          }).join('');
+      }},
+      {label:"Offer appointment time", render: radioStep('slot', ['Tue Sep 9, 9:00am','Thu Sep 11, 2:00pm','Fri Sep 12, 10:30am','None worked for caller'])},
+      {label:"Send intake forms", render: function(answers){
+        return answers.slot && answers.slot !== 'None worked for caller'
+          ? '<div class="quiz-result pass">Digital intake forms sent to Jordan Blake ahead of the visit.</div>'
+          : '<div style="font-size:13.5px; color:var(--ink-soft);">No visit scheduled yet — forms will send once a time is confirmed.</div>';
+      }},
+      {label:"Log outcome", render: function(answers){
+        return answers.slot && answers.slot !== 'None worked for caller'
+          ? '<div class="quiz-result pass">Scheduled for '+answers.slot+'.</div>'
+          : '<div class="quiz-result fail">Not scheduled — none of the offered times worked.</div>';
+      }},
+      {label:"If not scheduled, add to follow-up list", render: function(answers){
+        return answers.slot && answers.slot !== 'None worked for caller'
+          ? '<div style="font-size:13.5px; color:var(--ink-soft);">No follow-up needed — already on the schedule.</div>'
+          : '<div style="font-size:13.5px; color:var(--ink-soft);">Jordan Blake added to the 48-hour follow-up list.</div>';
+      }}
+    ],
+    finish: function(answers){
+      return answers.slot && answers.slot !== 'None worked for caller' ? 'Scheduled for '+answers.slot+'.' : 'Not scheduled — added to 48-hour follow-up list.';
+    },
+    subject:"Jordan Blake"
+  },
+
+  denial: {
+    title:"Insurance claim denied", subtitle:"Denial SOP — Alan Ng, D2740 crown, Delta Dental PPO",
+    steps:[
+      {label:"Identify denial reason", render: radioStep('reasonCode', ['Missing pre-authorization','Frequency limitation exceeded','Not a covered service','Missing documentation'])},
+      {label:"Check original verification", render: function(){
+        return '<div style="font-size:13.5px; color:var(--ink-soft);">The verification on file did not include a prior-authorization request for this procedure.</div>';
+      }},
+      {label:"Determine appeal eligibility", render: function(answers){
+        var eligible = answers.reasonCode === 'Missing pre-authorization' || answers.reasonCode === 'Missing documentation';
+        return eligible
+          ? '<div class="quiz-result pass">Eligible for appeal — missing items can be submitted retroactively.</div>'
+          : '<div class="quiz-result fail">Not eligible for appeal — balance becomes patient-responsible.</div>';
+      }},
+      {label:"Gather documentation", render: function(){
+        return ['Clinical notes','Radiographs','Prior authorization request','Narrative letter'].map(function(item){
+          return '<label class="quiz-opt"><input type="checkbox">'+item+'</label>';
+        }).join('');
+      }},
+      {label:"Submit appeal or rebill", render: function(answers){
+        var eligible = answers.reasonCode === 'Missing pre-authorization' || answers.reasonCode === 'Missing documentation';
+        return eligible ? '<div class="quiz-result pass">Appeal submitted to Delta Dental PPO.</div>' : '<div style="font-size:13.5px; color:var(--ink-soft);">No appeal to file — proceeding to patient billing.</div>';
+      }},
+      {label:"Update patient balance / notify", render: function(answers){
+        var eligible = answers.reasonCode === 'Missing pre-authorization' || answers.reasonCode === 'Missing documentation';
+        return eligible
+          ? '<div style="font-size:13.5px; color:var(--ink-soft);">Balance held pending appeal outcome.</div>'
+          : '<div class="quiz-result fail">Patient balance updated: $340 patient-responsible. Courtesy call scheduled.</div>';
+      }},
+      {label:"Log outcome and track", render: function(){
+        return '<div style="font-size:13.5px; color:var(--ink-soft);">Claim status updated. Follow-up scheduled in 21 days.</div>';
+      }}
+    ],
+    finish: function(answers){
+      var eligible = answers.reasonCode === 'Missing pre-authorization' || answers.reasonCode === 'Missing documentation';
+      return eligible ? 'Appeal submitted to Delta Dental PPO — pending 21 days.' : '$340 billed to patient — courtesy call scheduled.';
+    },
+    subject:"Alan Ng"
+  },
+
+  lowstock: {
+    title:"Low supply alert", subtitle:"Inventory SOP — Composite resin, shade A2",
+    steps:[
+      {label:"Identify item and current stock", render: function(){
+        return '<div style="font-size:13.5px; color:var(--ink-soft);">Composite resin (shade A2): 3 units on hand, par level 12.</div>';
+      }},
+      {label:"Check reorder threshold", render: function(){
+        return '<div class="quiz-result fail">Stock (3) is below par (12) — reorder triggered.</div>';
+      }},
+      {label:"Check preferred vendor and last price", render: function(){
+        return '<div style="font-size:13.5px; color:var(--ink-soft);">Vendor: Henry Schein · Last order: $186/case · Lead time: 3 business days.</div>';
+      }},
+      {label:"Place reorder", render: radioStep('qty', ['1 case','2 cases (recommended to restore par)','Skip this time'])},
+      {label:"Notify team item is low until restock", render: function(){
+        return '<div class="quiz-result pass">Team notified: composite resin (A2) is low until the new order arrives.</div>';
+      }},
+      {label:"Log order placed", render: function(answers){
+        return answers.qty && answers.qty !== 'Skip this time'
+          ? '<div class="quiz-result pass">'+answers.qty+' ordered from Henry Schein — arriving in ~3 business days.</div>'
+          : '<div class="quiz-result fail">No order placed — flagged for manual follow-up.</div>';
+      }},
+      {label:"Mark alert resolved once received", render: function(){
+        return '<div style="font-size:13.5px; color:var(--ink-soft);">This alert will auto-resolve once stock is logged back above par level.</div>';
+      }}
+    ],
+    finish: function(answers){
+      return answers.qty && answers.qty !== 'Skip this time' ? answers.qty+' ordered from Henry Schein.' : 'No order placed — flagged for manual follow-up.';
+    },
+    subject:"Composite resin (A2)"
+  },
+
+  callconversion: {
+    title:"Training opportunity detected", subtitle:"Closed-loop performance SOP — Devon Park, Front Desk. New patient call conversion: 41% (target 60%)",
+    steps:[
+      {label:"System detects underperformance", render: function(){
+        return '<div class="quiz-result fail">New patient call conversion for Devon Park is 41%, below the 60% target. Training opportunity detected automatically.</div>';
+      }},
+      {label:"Assign training", render: function(){
+        return '<div style="font-size:13.5px; color:var(--ink-soft);">Auto-assigned: <strong>New Patient Call — Refresher</strong> module, due before Devon\'s next shift.</div>';
+      }},
+      {label:"Complete training module", render: function(){
+        return '<div style="font-size:13.5px; color:var(--ink-soft);">Devon has completed the refresher module. Ready for the role-play assessment.</div>';
+      }},
+      {label:"Role-play assessment — scenario 1", render: radioStep('scenario1', ["Confirms insurance and offers the next available appointment","Only takes a message and says someone will call back"])},
+      {label:"Role-play assessment — scenario 2", render: radioStep('scenario2', ["Asks about the caller's dental concern and explains next steps","Quotes prices immediately without asking questions"])},
+      {label:"Manager review", render: function(answers){
+        var correct = 0;
+        if(answers.scenario1 === "Confirms insurance and offers the next available appointment") correct++;
+        if(answers.scenario2 === "Asks about the caller's dental concern and explains next steps") correct++;
+        return '<div style="font-size:13.5px; color:var(--ink-soft); margin-bottom:10px;">Role-play score: '+correct+'/2.</div>'+
+          ['Approve — certify','Send back for another attempt'].map(function(opt){
+            return '<label class="quiz-opt"><input type="radio" name="managerDecision" value="'+opt+'" onchange="wf.answers.managerDecision=this.value">'+opt+'</label>';
+          }).join('');
+      }},
+      {label:"Certification", render: function(answers){
+        return answers.managerDecision === 'Approve — certify'
+          ? '<div class="quiz-result pass">Certified ✅ — added to Devon Park\'s certifications.</div>'
+          : '<div class="quiz-result fail">Sent back — Devon will retake the role-play assessment.</div>';
+      }},
+      {label:"Resume performance tracking", render: function(answers){
+        return answers.managerDecision === 'Approve — certify'
+          ? '<div style="font-size:13.5px; color:var(--ink-soft);">System resumes watching new-patient call conversion. Next week\'s number should reflect the refresher.</div>'
+          : '<div style="font-size:13.5px; color:var(--ink-soft);">Training opportunity stays open — Devon will be re-flagged until certified.</div>';
+      }}
+    ],
+    finish: function(answers){
+      var correct = 0;
+      if(answers.scenario1 === "Confirms insurance and offers the next available appointment") correct++;
+      if(answers.scenario2 === "Asks about the caller's dental concern and explains next steps") correct++;
+      var approved = answers.managerDecision === 'Approve — certify';
+      if(approved){
+        var devon = staffData.find(function(s){ return s.name === "Devon Park"; });
+        if(devon){
+          var mod = devon.modules.find(function(m){ return m.name === "New Patient Call — Refresher"; });
+          if(mod){ mod.quizScore = correct; mod.quizTotal = 2; }
+          else { devon.modules.push({name:"New Patient Call — Refresher", pct:100, quizScore:correct, quizTotal:2}); }
+          demoState.training[staffData.indexOf(devon)+'-'+devon.modules.indexOf(mod || devon.modules[devon.modules.length-1])] = {score:correct, total:2};
+          renderTraining();
+        }
+        demoState.performance.callConversion = 58;
+        updatePerformanceMetric('callConversion', 'callconversion', 60);
+        return 'Certified ✅ — role-play scored '+correct+'/2. Call conversion tracking resumed (41% → 58%).';
+      }
+      return 'Sent back for another attempt — role-play scored '+correct+'/2. Still flagged as a training opportunity.';
+    },
+    subject:"Devon Park"
+  },
+
+  insuranceverify: {
+    title:"New patient insurance unverified",
+    intake:[
+      {key:'patientName', label:'Patient (placeholder name — no real names)', type:'text', placeholder:'e.g. New Patient A'},
+      {key:'apptTime', label:'Appointment date/time', type:'text', placeholder:'e.g. Thu 9:00am'}
+    ],
+    subtitle: function(a){ return 'Insurance verification SOP — '+(a.patientName||'Patient')+', new patient exam '+(a.apptTime||'')+', no verification on file'; },
+    steps:[
+      {label:"Identify the appointment needing verification", render: function(answers){
+        return '<div class="quiz-result fail">'+(answers.patientName||'This patient')+' is scheduled '+(answers.apptTime||'soon')+' as a new patient. No insurance verification is on file.</div>';
+      }},
+      {label:"Check the payer", render: radioStep('payer', ["Cigna PPO","Delta Dental PPO","Aetna DMO","Self-pay / no insurance"])},
+      {label:"Confirm coverage and benefits", render: function(answers){
+        var notes = {
+          "Cigna PPO":"Active PPO coverage confirmed. Preventive services covered at 100%, basic restorative at 80%.",
+          "Delta Dental PPO":"Active PPO coverage confirmed. Annual maximum has $1,200 remaining.",
+          "Aetna DMO":"Active DMO coverage found — DMO plans require the patient to have this office assigned as their primary dentist.",
+          "Self-pay / no insurance":"No active coverage found. Patient will be responsible for the full visit cost."
+        };
+        return '<div style="font-size:13.5px; color:var(--ink-soft);">'+(notes[answers.payer] || 'Select a payer to check coverage.')+'</div>';
+      }},
+      {label:"Flag discrepancies", render: function(answers){
+        return answers.payer === "Aetna DMO"
+          ? '<div class="quiz-result fail">Discrepancy: '+(answers.patientName||'the patient')+' has not assigned this office as their PCP dentist. Front desk should confirm before the visit or the claim may deny.</div>'
+          : '<div class="quiz-result pass">No discrepancies found.</div>';
+      }},
+      {label:"Update patient file", render: function(answers){
+        return '<div style="font-size:13.5px; color:var(--ink-soft);">Verification details saved to '+(answers.patientName||'the patient\'s')+' chart, visible to the front desk and provider.</div>';
+      }},
+      {label:"Notify patient of estimated cost", render: function(answers){
+        var estimate = {
+          "Cigna PPO":"$0 estimated out-of-pocket for the exam (covered at 100%).",
+          "Delta Dental PPO":"$0 estimated out-of-pocket for the exam (covered at 100%).",
+          "Aetna DMO":"$0 estimated out-of-pocket once the PCP assignment is confirmed.",
+          "Self-pay / no insurance":"$220 estimated cost, due at time of visit."
+        };
+        return '<div style="font-size:13.5px; color:var(--ink-soft);">Patient notified: '+(estimate[answers.payer] || 'Estimate pending payer selection.')+'</div>';
+      }},
+      {label:"Mark ready for visit", render: function(answers){
+        return answers.payer === "Aetna DMO"
+          ? '<div class="quiz-result fail">Flagged for front-desk follow-up before the visit — not yet ready.</div>'
+          : '<div class="quiz-result pass">Verified and ready for the visit.</div>';
+      }}
+    ],
+    finish: function(answers){
+      var flagged = answers.payer === "Aetna DMO";
+      demoState.performance.insuranceVerified = flagged ? 68 : 82;
+      updatePerformanceMetric('insuranceVerified', 'insuranceverify', 95);
+      var name = answers.patientName || 'Patient';
+      return {summary: flagged
+        ? name+' — PCP assignment discrepancy flagged for front-desk follow-up.'
+        : name+' — insurance verified, ready for the visit.', value:0};
+    },
+    subject: function(a){ return a.patientName || 'Patient'; }
+  },
+
+  negativereview: {
+    title:"Negative review posted", subtitle:"Reputation SOP — 3★ Google review, 1 week old, not yet responded to",
+    steps:[
+      {label:"System detects the review", render: function(){
+        return '<div class="quiz-result fail">3★ Google review: "Good visit but the insurance estimate I was given changed after the fact." No response on file after 1 week.</div>';
+      }},
+      {label:"Assign it to someone", render: radioStep('assignee', ["Dr. Smith","Front desk manager","Practice manager (Renee Ortiz)"])},
+      {label:"Choose a response approach", render: radioStep('tone', ["Apologize and offer to clarify the billing directly","Explain the policy without apologizing","Leave it — don't respond"])},
+      {label:"Draft and post the response", render: function(answers){
+        var drafts = {
+          "Apologize and offer to clarify the billing directly":"\"We're sorry the estimate didn't match what you were told — that's on us. Please call the office so we can walk through the billing with you directly.\"",
+          "Explain the policy without apologizing":"\"Insurance estimates can shift based on your plan's final adjudication — happy to explain further if you call the office.\"",
+          "Leave it — don't respond":null
+        };
+        var draft = drafts[answers.tone];
+        return draft
+          ? '<div style="font-size:13.5px; color:var(--ink-soft);">Posted as a public reply:<br><em>'+draft+'</em></div>'
+          : '<div class="quiz-result fail">No response posted. Response rate will keep drifting down, and this review stays the top result for anyone searching the practice.</div>';
+      }},
+      {label:"Mark resolved", render: function(answers){
+        return answers.tone === "Leave it — don't respond"
+          ? '<div style="font-size:13.5px; color:var(--ink-soft);">Left open — still flagged as unresolved.</div>'
+          : '<div class="quiz-result pass">Marked resolved. Response rate updates on the Patient Growth page.</div>';
+      }}
+    ],
+    finish: function(answers){
+      var responded = answers.tone !== "Leave it — don't respond";
+      if(responded){
+        var rateEl = document.getElementById('review-response-rate');
+        var statusEl = document.getElementById('review-negative-status');
+        var dotEl = document.getElementById('review-negative-dot');
+        if(rateEl) rateEl.textContent = '93%';
+        if(statusEl) statusEl.textContent = 'Responded';
+        if(dotEl) dotEl.style.background = 'var(--sage)';
+      }
+      return responded ? 'Responded to the 3★ review — response rate up to 93%.' : 'Review left unanswered — flagged as still open.';
+    },
+    subject:"3★ Google review"
+  },
+
+  newlead: {
+    title:"New lead from Google Ads", subtitle:"Lead follow-up SOP — Sarah Kim submitted a contact form via Google Ads",
+    steps:[
+      {label:"Lead captured", render: function(){
+        return '<div style="font-size:13.5px; color:var(--ink-soft);">New lead: Sarah Kim, source = Google Ads, submitted the website contact form 12 minutes ago.</div>';
+      }},
+      {label:"Front desk follow-up", render: radioStep('followup', ["Called within 1 hour — reached her","Called within 1 hour — no answer, left voicemail","Not yet contacted"])},
+      {label:"Offer an appointment", render: radioStep('scheduled', ["Scheduled a new patient exam","She wants to think it over first","Did not schedule"])},
+      {label:"Update marketing tracking", render: function(answers){
+        return answers.scheduled === "Scheduled a new patient exam"
+          ? '<div class="quiz-result pass">Counted as a converted Google Ads lead on the Patient Growth page.</div>'
+          : '<div style="font-size:13.5px; color:var(--ink-soft);">Counted as a Google Ads lead, not yet converted.</div>';
+      }},
+      {label:"Confirm", render: function(answers){
+        return answers.scheduled === "Scheduled a new patient exam"
+          ? '<div style="font-size:13.5px; color:var(--ink-soft);">Sarah Kim is on the schedule. She\'ll get a reminder text 24 hours before.</div>'
+          : '<div style="font-size:13.5px; color:var(--ink-soft);">Sarah Kim stays on the follow-up list — Devon will check back in 3 days.</div>';
+      }}
+    ],
+    finish: function(answers){
+      var scheduled = answers.scheduled === "Scheduled a new patient exam";
+      var leadsEl = document.getElementById('mkt-googleads-leads');
+      var convEl = document.getElementById('mkt-googleads-converted');
+      var rateEl = document.getElementById('mkt-googleads-rate');
+      if(leadsEl && convEl && rateEl){
+        var leads = parseInt(leadsEl.textContent, 10) + 1;
+        var converted = parseInt(convEl.textContent, 10) + (scheduled ? 1 : 0);
+        var rate = Math.round((converted / leads) * 100);
+        leadsEl.textContent = leads;
+        convEl.textContent = converted;
+        rateEl.textContent = rate + '%';
+        rateEl.style.background = rate >= 50 ? 'var(--sage-light)' : (rate >= 30 ? 'var(--amber-light)' : 'var(--coral-light)');
+        rateEl.style.color = rate >= 50 ? 'var(--sage)' : (rate >= 30 ? 'var(--amber)' : 'var(--coral)');
+      }
+      return scheduled ? 'Sarah Kim scheduled — Google Ads lead converted.' : 'Sarah Kim added to follow-up — Google Ads lead not yet converted.';
+    },
+    subject:"Sarah Kim"
+  }
+};
+
+function lengthToValue(length){
+  if(length === '30 min') return 120;
+  if(length === '45 min') return 180;
+  if(length === '60 min') return 220;
+  return 150;
+}
+
+var staffOptions = ['Devon Park','Jasmine Rivera','Maria Gonzalez','Renee Ortiz','Priya Shah, DDS','Dr. Smith'];
+
+var wf = null;
+
+function openWorkflow(key){
+  wf = {key:key, step:0, answers:{contacts:{}}};
+  document.getElementById('quiz-modal').classList.remove('hidden');
+  renderStaffGate();
+}
+
+function renderStaffGate(){
+  var w = workflows[wf.key];
+  var card = document.getElementById('quiz-modal-card');
+  var header = '<h2>'+w.title+'</h2><div class="modal-sub">Who\'s completing this?</div>';
+  var body = '<div class="quiz-q"><div class="q-text">Completed by</div>'+
+    '<select style="width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:8px; font-size:13.5px;" onchange="wf.answers.completedBy=this.value">'+
+    '<option value="">Select…</option>'+
+    staffOptions.map(function(o){ return '<option value="'+o+'" '+(wf.answers.completedBy===o?'selected':'')+'>'+o+'</option>'; }).join('')+
+    '</select></div>';
+  card.innerHTML = header + body + '<div class="modal-actions"><button type="button" class="btn" onclick="closeQuizModal()">Cancel</button><button type="button" class="btn" onclick="wfAfterStaffGate()">Continue</button></div>';
+}
+function wfAfterStaffGate(){
+  var w = workflows[wf.key];
+  if(!wf.answers.completedBy) wf.answers.completedBy = staffOptions[0];
+  if(w.intake){ renderIntakeForm(); } else { wf.step = 0; renderWorkflowStep(); }
+}
+
+function renderIntakeForm(){
+  var w = workflows[wf.key];
+  var card = document.getElementById('quiz-modal-card');
+  var header = '<h2>'+w.title+'</h2><div class="modal-sub">Enter this situation\'s real details — use a placeholder name, never a real patient name.</div>';
+  var body = w.intake.map(function(f){
+    if(f.type === 'select'){
+      return '<div class="quiz-q"><div class="q-text">'+f.label+'</div><select style="width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:8px; font-size:13.5px;" onchange="wf.answers.'+f.key+'=this.value">'+
+        '<option value="">Select…</option>'+
+        f.options.map(function(o){ return '<option value="'+o+'">'+o+'</option>'; }).join('')+
+      '</select></div>';
+    }
+    return '<div class="quiz-q"><div class="q-text">'+f.label+'</div><input type="text" placeholder="'+(f.placeholder||'')+'" style="width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:8px; font-size:13.5px; font-family:inherit;" oninput="wf.answers.'+f.key+'=this.value"></div>';
+  }).join('');
+  card.innerHTML = header + body + '<div class="modal-actions"><button type="button" class="btn" onclick="renderStaffGate()">Back</button><button type="button" class="btn" onclick="wfBeginSteps()">Start workflow</button></div>';
+}
+function wfBeginSteps(){
+  var w = workflows[wf.key];
+  w.intake.forEach(function(f){
+    if(!wf.answers[f.key]){ wf.answers[f.key] = f.type === 'select' ? (f.options[0]) : (f.placeholder || ''); }
+  });
+  wf.step = 0;
+  renderWorkflowStep();
+}
+
+function renderWorkflowStep(){
+  var w = workflows[wf.key];
+  var stepDef = w.steps[wf.step];
+  var card = document.getElementById('quiz-modal-card');
+  var subtitle = typeof w.subtitle === 'function' ? w.subtitle(wf.answers) : w.subtitle;
+  var header = '<h2>'+w.title+'</h2><div class="modal-sub">'+subtitle+' · Completed by '+(wf.answers.completedBy||'—')+'</div>'+
+    '<div style="font-size:12px; color:var(--ink-faint); margin-bottom:14px;">Step '+(wf.step+1)+' of '+w.steps.length+'</div>';
+  var body = '<div class="quiz-q"><div class="q-text">'+(wf.step+1)+'. '+stepDef.label+'</div>'+stepDef.render(wf.answers)+'</div>';
+  var backBtn = wf.step > 0 ? '<button type="button" class="btn" onclick="wfBack()">Back</button>'
+    : (w.intake ? '<button type="button" class="btn" onclick="renderIntakeForm()">Back</button>' : '<button type="button" class="btn" onclick="renderStaffGate()">Back</button>');
+  var nextBtn = wf.step < w.steps.length - 1
+    ? '<button type="button" class="btn" onclick="wfNext()">Continue</button>'
+    : '<button type="button" class="btn" onclick="wfFinish()">Finish</button>';
+  card.innerHTML = header + body + '<div class="modal-actions">'+backBtn+nextBtn+'</div>';
+}
+function wfNext(){ wf.step++; renderWorkflowStep(); }
+function wfBack(){ wf.step--; renderWorkflowStep(); }
+function wfFinish(){
+  var w = workflows[wf.key];
+  var result = w.finish(wf.answers);
+  var summary = typeof result === 'string' ? result : result.summary;
+  var value = (result && typeof result === 'object' && result.value) ? result.value : 0;
+  var subject = typeof w.subject === 'function' ? w.subject(wf.answers) : w.subject;
+  var today = new Date().toISOString().slice(0,10);
+  if(!demoState.pilotStartDate) demoState.pilotStartDate = today;
+  if(demoState.usageDays.indexOf(today) === -1) demoState.usageDays.push(today);
+  var entryId = 'a'+Date.now();
+  demoState.activity.unshift({
+    id: entryId,
+    when: new Date().toLocaleString(undefined,{month:'short', day:'numeric', hour:'numeric', minute:'2-digit'}),
+    title: w.title+' — '+subject,
+    summary: summary,
+    key: wf.key,
+    value: value,
+    by: wf.answers.completedBy || '',
+    feedback: null
+  });
+  demoState.activity = demoState.activity.slice(0, 500);
+  saveDemoState(demoState);
+  renderActivity();
+  renderPilotProgress();
+  renderFeedbackPrompt(entryId);
+}
+function renderFeedbackPrompt(entryId){
+  var card = document.getElementById('quiz-modal-card');
+  card.innerHTML = '<h2>Quick check</h2><div class="modal-sub">Was this workflow helpful?</div>'+
+    '<div class="modal-actions" style="justify-content:flex-start; gap:8px;">'+
+      '<button type="button" class="btn" onclick="submitFeedback(\''+entryId+'\',\'up\')">👍 Helpful</button>'+
+      '<button type="button" class="btn" onclick="submitFeedback(\''+entryId+'\',\'down\')">👎 Not helpful</button>'+
+    '</div>'+
+    '<div class="modal-actions"><button type="button" class="btn btn-quiet" onclick="closeQuizModal(); wf=null;">Skip</button></div>';
+}
+function submitFeedback(entryId, val){
+  var entry = demoState.activity.find(function(a){ return a.id === entryId; });
+  if(entry) entry.feedback = val;
+  saveDemoState(demoState);
+  renderActivity();
+  document.getElementById('quiz-modal').classList.add('hidden');
+  wf = null;
+}
+function deleteActivityEntry(entryId){
+  demoState.activity = demoState.activity.filter(function(a){ return a.id !== entryId; });
+  saveDemoState(demoState);
+  renderActivity();
+  renderPilotProgress();
+}
+function renderActivity(){
+  var section = document.getElementById('activity-section');
+  var list = document.getElementById('activity-list');
+  if(!demoState.activity.length){ section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  list.innerHTML = demoState.activity.map(function(a){
+    var fb = a.feedback === 'up' ? ' 👍' : (a.feedback === 'down' ? ' 👎' : '');
+    var byText = a.by ? ' · '+a.by : '';
+    return '<div class="problem-row"><div class="sev-dot" style="background:var(--sage);"></div><div class="body">'+
+      '<div class="title">'+a.title+fb+'</div><div class="meta">'+a.summary+' · '+a.when+byText+'</div></div>'+
+      '<button class="btn-quiet" title="Delete entry" onclick="deleteActivityEntry(\''+a.id+'\')">✕</button></div>';
+  }).join('');
+}
+renderActivity();
+
+function renderPilotProgress(){
+  var section = document.getElementById('pilot-progress-section');
+  var body = document.getElementById('pilot-progress-body');
+  if(!section || !body) return;
+  var log = demoState.activity;
+  if(!log.length){ section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  var counts = {};
+  var totalLost = 0;
+  log.forEach(function(a){
+    counts[a.key] = (counts[a.key]||0) + 1;
+    if(a.value) totalLost += a.value;
+  });
+  var labels = {cancellation:'Cancellations', noshow:'No-shows', insuranceverify:'Insurance checks', inquiry:'New patient inquiries',
+    denial:'Claim denials', lowstock:'Supply alerts', callconversion:'Call conversion loops', negativereview:'Reviews handled', newlead:'New leads'};
+  var breakdown = Object.keys(counts).map(function(k){
+    return '<div style="display:flex; justify-content:space-between; padding:5px 0; font-size:13.5px;"><span>'+(labels[k]||k)+'</span><span style="color:var(--ink-faint);">'+counts[k]+'</span></div>';
+  }).join('');
+  var daysUsed = demoState.usageDays.length;
+  var daysSinceStart = 1;
+  if(demoState.pilotStartDate){
+    var start = new Date(demoState.pilotStartDate);
+    var now = new Date();
+    daysSinceStart = Math.max(1, Math.round((now - start) / 86400000) + 1);
+  }
+  body.innerHTML =
+    '<div style="display:flex; gap:32px; flex-wrap:wrap; margin-bottom:12px;">'+
+      '<div><div style="font-size:22px; font-weight:600;">'+log.length+'</div><div style="font-size:12.5px; color:var(--ink-faint);">workflows logged</div></div>'+
+      '<div><div style="font-size:22px; font-weight:600;">$'+totalLost.toLocaleString()+'</div><div style="font-size:12.5px; color:var(--ink-faint);">lost production tracked</div></div>'+
+      '<div><div style="font-size:22px; font-weight:600;">'+daysUsed+' / '+daysSinceStart+'</div><div style="font-size:12.5px; color:var(--ink-faint);">days used since pilot started</div></div>'+
+    '</div>' + breakdown;
+}
+renderPilotProgress();
+
+function exportPilotData(){
+  var data = JSON.stringify(demoState, null, 2);
+  var blob = new Blob([data], {type:'application/json'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'gumberry-pilot-data-'+new Date().toISOString().slice(0,10)+'.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function dismissRec(btn){
+  var card = btn.closest('.rec-card');
+  card.classList.add('dismissed');
+  card.querySelectorAll('button').forEach(function(b){ b.disabled = true; });
+  var id = card.getAttribute('data-rec');
+  if(demoState.ai.dismissed.indexOf(id) === -1) demoState.ai.dismissed.push(id);
+  saveDemoState(demoState);
+}
+function acceptRec(btn){
+  btn.textContent = "Done";
+  btn.disabled = true;
+  var card = btn.closest('.rec-card');
+  var id = card.getAttribute('data-rec');
+  if(demoState.ai.accepted.indexOf(id) === -1) demoState.ai.accepted.push(id);
+  saveDemoState(demoState);
+}
+function applySavedAiState(){
+  document.querySelectorAll('.rec-card').forEach(function(card){
+    var id = card.getAttribute('data-rec');
+    if(demoState.ai.dismissed.indexOf(id) !== -1){
+      card.classList.add('dismissed');
+      card.querySelectorAll('button').forEach(function(b){ b.disabled = true; });
+    } else if(demoState.ai.accepted.indexOf(id) !== -1){
+      var actionBtn = card.querySelector('.rec-actions .btn');
+      if(actionBtn){ actionBtn.textContent = "Done"; actionBtn.disabled = true; }
+    }
+  });
+}
+applySavedAiState();
+</script>
+</body>
+</html>
